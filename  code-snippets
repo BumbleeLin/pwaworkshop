@@ -1,0 +1,280 @@
+<-------- APP MANIFEST ------------->
+
+1. public/manifest.json
+
+    {
+        "name": "Weather",
+        "short_name": "Weather",
+        "icons": [{
+            "src": "/images/icons/icon-128x128.png",
+            "sizes": "128x128",
+            "type": "image/png"
+            }, {
+            "src": "/images/icons/icon-144x144.png",
+            "sizes": "144x144",
+            "type": "image/png"
+            }, {
+            "src": "/images/icons/icon-152x152.png",
+            "sizes": "152x152",
+            "type": "image/png"
+            }, {
+            "src": "/images/icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+            }, {
+            "src": "/images/icons/icon-256x256.png",
+            "sizes": "256x256",
+            "type": "image/png"
+            }, {
+            "src": "/images/icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+            }],
+        "start_url": "/index.html",
+        "display": "standalone",
+        "background_color": "#3E4EB8",
+        "theme_color": "#2F3BA2"
+    }
+
+2. public/index.html
+
+    <!-- CODELAB: Add link rel manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+3. public/index.html
+
+    <!-- CODELAB: Add iOS meta tags and icons -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Weather PWA">
+    <link rel="apple-touch-icon" href="/images/icons/icon-152x152.png">
+
+4. public/index.html
+
+    <!-- CODELAB: Add description here -->
+    <meta name="description" content="A sample weather app">
+
+5.public/index.html
+
+    <!-- CODELAB: Add meta theme-color -->
+    <meta name="theme-color" content="#2F3BA2" />
+
+
+<-------- SERVICE WORKERS ------------->
+
+6. public/index.html -- Register service worker
+
+    // CODELAB: Register service worker.
+    if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then((reg) => {
+            console.log('Service worker registered.', reg);
+            });
+        });
+    }
+
+7a. public/service-workers.js -- Precache offline page
+
+    // CODELAB: Update cache names any time any of the cached files change.
+    const FILES_TO_CACHE = [
+        '/offline.html',
+    ];
+
+7b.public/service-workers.js -- Precache offline page, update the install event
+
+    // CODELAB: Precache static resources here.
+    evt.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => {
+            console.log('[ServiceWorker] Pre-caching offline page');
+            return cache.addAll(FILES_TO_CACHE);
+        })
+    );
+
+8. public/service-worker.js -- Clean-up old offline pages
+
+    // CODELAB: Remove previous cached data from disk.
+    evt.waitUntil(
+        caches.keys().then((keyList) => {
+            return Promise.all(keyList.map((key) => {
+                if (key !== CACHE_NAME) {
+                    console.log('[ServiceWorker] Removing old cache', key);
+                    return caches.delete(key);
+                }
+            }));
+        })
+    );
+
+9. public/service-workers.js -- Handle failed network requests
+
+    // CODELAB: Add fetch event handler here.
+    if (evt.request.mode !== 'navigate') {
+        // Not a page navigation, bail.
+        return;
+    }
+    evt.respondWith(
+        fetch(evt.request)
+            .catch(() => {
+            return caches.open(CACHE_NAME)
+                .then((cache) => {
+                    return cache.match('offline.html');
+                });
+            })
+    );
+
+
+<-------- OFFLINE EXPERIENCE ------------->
+
+10. public/scripts/app.js -- update getForecastFromCache()
+
+    // CODELAB: Add code to get weather forecast from the caches object.
+    if (!('caches' in window)) {
+        return null;
+    }
+    const url = `${window.location.origin}/forecast/${coords}`;
+        return caches.match(url)
+            .then((response) => {
+            if (response) {
+                return response.json();
+            }
+            return null;
+        })
+        .catch((err) => {
+            console.error('Error getting data from cache', err);
+            return null;
+    });
+
+11. public/scripts/app.js -- update updateData()
+
+    // CODELAB: Add code to call getForecastFromCache.
+    getForecastFromCache(location.geo)
+        .then((forecast) => {
+        renderForecast(card, forecast);
+    });
+
+12. public/scripts/app.js -- renderForecast() NO NEED TO COPY
+
+    // If the data on the element is newer, skip the update.
+    if (lastUpdated >= data.currently.time) {
+        return;
+    }
+
+13. public/service-worker.js -- update CACHE_NAME
+
+    // CODELAB: Update cache names any time any of the cached files change.
+    const CACHE_NAME = 'static-cache-v2';
+    const DATA_CACHE_NAME = 'data-cache-v1';
+
+14. public/service-worker.js -- update files to cache
+
+    // CODELAB: Add list of files to cache here.
+    const FILES_TO_CACHE = [
+        '/',
+        '/index.html',
+        '/scripts/app.js',
+        '/scripts/install.js',
+        '/scripts/luxon-1.11.4.js',
+        '/styles/inline.css',
+        '/images/add.svg',
+        '/images/clear-day.svg',
+        '/images/clear-night.svg',
+        '/images/cloudy.svg',
+        '/images/fog.svg',
+        '/images/hail.svg',
+        '/images/install.svg',
+        '/images/partly-cloudy-day.svg',
+        '/images/partly-cloudy-night.svg',
+        '/images/rain.svg',
+        '/images/refresh.svg',
+        '/images/sleet.svg',
+        '/images/snow.svg',
+        '/images/thunderstorm.svg',
+        '/images/tornado.svg',
+        '/images/wind.svg',
+    ];
+
+15. public/service-worker.js -- update activate event
+
+    if (key !== CACHE_NAME && key !== DATA_CACHE_NAME) {
+
+16. public/service-worker.js -- update fetch event
+
+    // CODELAB: Add fetch event handler here.
+    if (evt.request.url.includes('/forecast/')) {
+        console.log('[Service Worker] Fetch (data)', evt.request.url);
+        evt.respondWith(
+            caches.open(DATA_CACHE_NAME).then((cache) => {
+                return fetch(evt.request)
+                    .then((response) => {
+                    // If the response was good, clone it and store it in the cache.
+                    if (response.status === 200) {
+                        cache.put(evt.request.url, response.clone());
+                    }
+                    return response;
+                    }).catch((err) => {
+                    // Network request failed, try to get it from the cache.
+                    return cache.match(evt.request);
+                    });
+            }));
+        return;
+    }
+    evt.respondWith(
+        caches.open(CACHE_NAME).then((cache) => {
+        return cache.match(evt.request)
+            .then((response) => {
+                return response || fetch(evt.request);
+            });
+        })
+    );
+
+<-------- INSTALL EXPERIENCE ------------->
+
+17. public/index.html -- add script to index page
+
+    <!-- CODELAB: Add the install script here -->
+    <script src="/scripts/install.js"></script>
+
+18. public/scripts/install.js -- add listener for beforeinstallprompt event
+
+    // CODELAB: Add event listener for beforeinstallprompt event
+    window.addEventListener('beforeinstallprompt', saveBeforeInstallPromptEvent);
+
+19. public/scripts/install.js -- save event and show install button
+
+    // CODELAB: Add code to save event & show the install button.
+    deferredInstallPrompt = evt;
+    installButton.removeAttribute('hidden');
+
+20. public/scripts/install.js -- show the prompt / hide the button
+
+    // CODELAB: Add code show install prompt & hide the install button.
+    deferredInstallPrompt.prompt();
+    // Hide the install button, it can't be called twice.
+    evt.srcElement.setAttribute('hidden', true);
+
+21. public/scripts/install.js -- log result
+
+    // CODELAB: Log user response to prompt.
+    deferredInstallPrompt.userChoice
+        .then((choice) => {
+        if (choice.outcome === 'accepted') {
+            console.log('User accepted the A2HS prompt', choice);
+        } else {
+            console.log('User dismissed the A2HS prompt', choice);
+        }
+        deferredInstallPrompt = null;
+    });
+
+22. public/scripts/install.js -- event listener for app installed
+
+    // CODELAB: Add event listener for appinstalled event
+    window.addEventListener('appinstalled', logAppInstalled);
+
+
+23. public/scripts/install.js -- output when installed
+
+    // CODELAB: Add code to log the event
+    console.log('Weather App was installed.', evt);
+
+
+Don't forget to update the CACHE_NAME in your service-worker.js file since you've made changes to files that are already cached.
