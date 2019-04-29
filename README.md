@@ -1,9 +1,9 @@
-# Your First Progressive Web App Codelab
+# Your First Progressive Web App
 
 These are the resource files needed for the
-[Your First Progressive Web App][codelab] codelab.
+[Your First Progressive Web App].
 
-In this codelab, you'll  build a weather web app using Progressive Web App
+You'll  build a weather web app using Progressive Web App
 techniques. Your app will:
 
 * Use responsive design, so it works on desktop or mobile.
@@ -23,13 +23,7 @@ techniques. Your app will:
 
 ## Getting started
 
-To get started, check out the [codelab instruction][codelab]
-
-
-## Feedback
-
-This is a work in progress, if you find a mistake, please [file an issue][git-issue].
-
+Clone > npm install
 
 ## License
 
@@ -49,6 +43,3 @@ under the License is distributed on an “AS IS” BASIS, WITHOUT WARRANTIES OR
 CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 
-
-[codelab]: https://codelabs.developers.google.com/codelabs/your-first-pwapp/
-[git-issue]: https://github.com/googlecodelabs/your-first-pwapp/issues
